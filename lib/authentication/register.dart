@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sellers_app/widgets/custom_text_field.dart';
 
@@ -24,6 +26,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
   XFile? imageXFile;
   final ImagePicker _picker = ImagePicker();
 
+  Position? position;
+  List<Placemark>? placeMarks;
+
+  Future<void> _getImage() async
+  {
+    // allow seller to upload image from gallery
+    imageXFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    // set the image from the gallery as the display image
+    setState(() {
+      imageXFile;
+    });
+  }
+
+  getCurrentLocation() async
+  {
+    Position newPosition = await Geolocator.getCurrentPosition(
+      // to get exact location of cafe/restaurant of seller
+      // use bestForNavigation for buyer's place since seller traveling there
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    position = newPosition;
+    // returns multiple locations latlong coordinates as a List
+    placeMarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
+
+    // get the correct address from 0th index
+    Placemark pMark = placeMarks![0];
+
+    // get the textual address from latLong coordinates
+    String sellerAddress = '${pMark.subThoroughfare} ${pMark.thoroughfare}, '
+        '${pMark.subLocality} ${pMark.locality}, ${pMark.subAdministrativeArea}, '
+        '${pMark.administrativeArea} ${pMark.postalCode}, ${pMark.country}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -31,8 +67,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            SizedBox(height: 10,),
+            const SizedBox(height: 10,),
             InkWell(
+              onTap: ()
+              {
+                _getImage();
+              },
               child: CircleAvatar(
                 // whatever width of screen is, take 20% of it
                 radius: MediaQuery.of(context).size.width * 0.20,
