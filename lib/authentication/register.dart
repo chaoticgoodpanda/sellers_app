@@ -58,6 +58,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String sellerAddress = '${pMark.subThoroughfare} ${pMark.thoroughfare}, '
         '${pMark.subLocality} ${pMark.locality}, ${pMark.subAdministrativeArea}, '
         '${pMark.administrativeArea} ${pMark.postalCode}, ${pMark.country}';
+
+    locationController.text = sellerAddress;
   }
 
   @override
@@ -128,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: locationController,
                     hintText: "Cafe/Restaurant Address",
                     isObscure: false,
-                    enabled: false,
+                    enabled: true,
                   ),
                   Container(
                     width: 400,
@@ -143,7 +145,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Icons.location_on,
                         color: Colors.white,
                       ),
-                      onPressed: () => print("clicked"),
+                      onPressed: () {
+                        getCurrentLocation();
+                      },
                       style: ElevatedButton.styleFrom(
                         primary: Colors.amber,
                         shape: RoundedRectangleBorder(
