@@ -13,6 +13,8 @@ import 'package:sellers_app/widgets/loading_dialog.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fStorage;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../global/global.dart';
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
 
@@ -148,7 +150,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void registerSeller() async
   {
     User? currentUser;
-    final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     // create the new user on Firebase
     await firebaseAuth.createUserWithEmailAndPassword(email: emailController.text.trim(),
         password: passwordController.text.trim()).then((auth) {
@@ -199,7 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
 
     // save data locally
-    SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences!.setString("uid", currentUser.uid);
     await sharedPreferences!.setString("email", currentUser.email.toString());
     await sharedPreferences!.setString("name", nameController.text.trim());

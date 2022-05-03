@@ -1,9 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:sellers_app/global/global.dart';
 import 'package:sellers_app/splashScreen/splash_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // retrieve the locally stored user info
+  sharedPreferences = await SharedPreferences.getInstance();
 
   // set up Firebase
   await Firebase.initializeApp();
@@ -19,6 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sellers App (Food Delivery)',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
