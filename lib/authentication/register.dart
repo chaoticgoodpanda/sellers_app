@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sellers_app/widgets/custom_text_field.dart';
+import 'package:sellers_app/widgets/error_dialog.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -60,6 +61,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
         '${pMark.administrativeArea} ${pMark.postalCode}, ${pMark.country}';
 
     locationController.text = sellerAddress;
+  }
+
+  Future<void> formValidation() async
+  {
+    if(imageXFile == null)
+      {
+        showDialog(
+            context: context,
+            builder: (c)
+            {
+              return ErrorDialog(
+                message: "Please select an image.",
+              );
+            }
+        );
+      }
+    else
+      {
+        // if the passwords match and all the required fields are filled out
+        if(passwordController.text == confirmPasswordController.text) {
+          if (passwordController.text.isNotEmpty && emailController.text.isNotEmpty &&
+          nameController.text.isNotEmpty && phoneController.text.isNotEmpty &&
+          locationController.text.isNotEmpty) {
+            // start uploading the image to storage and then save data to Firestore DB
+
+          } else {
+            showDialog(
+                context: context,
+                builder: (c)
+                {
+                  return ErrorDialog(
+                    message: "All required fields have not been filled out.",
+                  );
+                }
+            );
+          }
+
+
+        }
+        else {
+          showDialog(
+              context: context,
+              builder: (c)
+              {
+                return ErrorDialog(
+                  message: "Passwords do not match.",
+                );
+              }
+          );
+        }
+      }
   }
 
   @override
@@ -169,7 +221,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 primary: Colors.purple,
                 padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
-              onPressed: () => print("clicked"),
+              onPressed: ()
+              {
+                formValidation();
+              },
             ),
             const SizedBox(height: 30,)
           ],
