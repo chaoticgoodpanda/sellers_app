@@ -1,11 +1,17 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sellers_app/mainScreens/home_screen.dart';
 import 'package:sellers_app/widgets/custom_text_field.dart';
 import 'package:sellers_app/widgets/error_dialog.dart';
+import 'package:sellers_app/widgets/loading_dialog.dart';
+import 'package:firebase_storage/firebase_storage.dart' as fStorage;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -29,6 +35,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Position? position;
   List<Placemark>? placeMarks;
+
+  String sellerImageUrl = "";
+  String sellerAddress = "";
 
   Future<void> _getImage() async
   {
@@ -56,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     Placemark pMark = placeMarks![0];
 
     // get the textual address from latLong coordinates
-    String sellerAddress = '${pMark.subThoroughfare} ${pMark.thoroughfare}, '
+    sellerAddress = '${pMark.subThoroughfare} ${pMark.thoroughfare}, '
         '${pMark.subLocality} ${pMark.locality}, ${pMark.subAdministrativeArea}, '
         '${pMark.administrativeArea} ${pMark.postalCode}, ${pMark.country}';
 
@@ -85,6 +94,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           nameController.text.isNotEmpty && phoneController.text.isNotEmpty &&
           locationController.text.isNotEmpty) {
             // start uploading the image to storage and then save data to Firestore DB
+            showDialog(context: context, builder: (c)
+            {
+              return LoadingDialog(
+                message: "Registering account...",
+              );
+            });
+
+            // the filename is the date & seconds
+            String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+            // access the firebase storage in the sellers folder
+            fStorage.Reference reference = fStorage.FirebaseStorage.instance.ref().child("sellers")
+            .child(fileName);
+            // upload the file
+            fStorage.UploadTask uploadTask = reference.putFile(File(imageXFile!.path));
+            fStorage.TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
+            await taskSnapshot.ref.getDownloadURL().then((url) {
+              sellerImageUrl = url;
+
+              // save info to firestore DB
+              registerSeller();
+            });
 
           } else {
             showDialog(
@@ -112,6 +142,68 @@ class _RegisterScreenState extends State<RegisterScreen> {
           );
         }
       }
+  }
+
+  // authenticate the user's id
+  void registerSeller() async
+  {
+    User? currentUser;
+    final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    // create the new user on Firebase
+    await firebaseAuth.createUserWithEmailAndPassword(email: emailController.text.trim(),
+        password: passwordController.text.trim()).then((auth) {
+          // assign the currentUser to the authorized user
+          currentUser = auth.user;
+    }).catchError((error) {
+      Navigator.pop(context);
+      showDialog(
+          context: context,
+          builder: (c)
+          {
+            return ErrorDialog(
+              message: error.message.toString(),
+            );
+          }
+      );
+    });
+    
+    if (currentUser != null)
+      {
+        // save their data to the Firestore
+        saveDataToFirestore(currentUser!).then((value) {
+          // stop the progress bar from loading
+          Navigator.pop(context);
+          // send user to the homepage
+          Route newRoute = MaterialPageRoute(builder: (c) => HomeScreen());
+          Navigator.pushReplacement(context, newRoute);
+        });
+      }
+  }
+
+  // for the currentUser, persist their user data to the Firestore
+  Future saveDataToFirestore(User currentUser) async
+  {
+    // sets the users' data by id in the sellers folder in Firestore
+    FirebaseFirestore.instance.collection("sellers").doc(currentUser.uid).set(
+        {
+          "sellerUID": currentUser.uid,
+          "sellerEmail": currentUser.email,
+          "sellerName": nameController.text.trim(),
+          "sellerAvatarUrl": sellerImageUrl,
+          "phone": phoneController.text.trim(),
+          "address": sellerAddress,
+          "status": "Approved",
+          "earnings": 0.0,
+          "lat": position!.latitude,
+          "lng": position!.longitude,
+        });
+
+    // save data locally
+    SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences!.setString("uid", currentUser.uid);
+    await sharedPreferences!.setString("email", currentUser.email.toString());
+    await sharedPreferences!.setString("name", nameController.text.trim());
+    await sharedPreferences!.setString("photoUrl", sellerImageUrl);
   }
 
   @override
