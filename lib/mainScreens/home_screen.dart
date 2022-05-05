@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sellers_app/authentication/auth_screen.dart';
 import 'package:sellers_app/global/global.dart';
+import 'package:sellers_app/widgets/user_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: UserDrawer(),
       appBar: AppBar(
         // TODO: colorful gradient thingy you'll want to change later
         flexibleSpace: Container(
@@ -33,23 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
           sharedPreferences!.getString("name")!,
         ),
         centerTitle: true,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
       ),
       body: Center(
-        child: ElevatedButton(
-          child: const Text("Logout"),
-          style: ElevatedButton.styleFrom(
-            primary: Colors.grey,
-          ),
-          onPressed: ()
-          {
-            // makes the current user null
-            firebaseAuth.signOut().then((value) {
-              // return to the login screen
-              Navigator.push(context, MaterialPageRoute(builder: (c) => const AuthScreen()));
-            });
-          },
-        ),
       ),
     );
   }
