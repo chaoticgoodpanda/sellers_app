@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sellers_app/authentication/auth_screen.dart';
 import 'package:sellers_app/global/global.dart';
+import 'package:sellers_app/uploadScreens/menus_upload_screen.dart';
 import 'package:sellers_app/widgets/user_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,9 +34,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: Text(
           sharedPreferences!.getString("name")!,
+          style: const TextStyle(fontSize: 30, fontFamily: "Lobster"),
         ),
         centerTitle: true,
         automaticallyImplyLeading: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.post_add, color: Colors.cyan,),
+            onPressed: ()
+            {
+              Navigator.push(context, MaterialPageRoute(builder: (c) => const MenusUploadScreen()));
+            },
+          ),
+        ],
       ),
       body: Center(
       ),
