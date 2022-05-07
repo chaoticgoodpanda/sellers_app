@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sellers_app/global/global.dart';
 import 'package:sellers_app/splashScreen/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +24,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // deals with spacebar not working bug sometimes in Flutter apps
+      shortcuts: {
+        LogicalKeySet(LogicalKeyboardKey.space): ActivateIntent(),
+      },
       title: 'Sellers App (Food Delivery)',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

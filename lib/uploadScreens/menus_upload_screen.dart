@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sellers_app/mainScreens/home_screen.dart';
@@ -303,6 +304,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
         String downloadUrl = await uploadImage(File(imageXFile!.path));
 
         // save info to Firebase
+        saveInfo(downloadUrl);
       }
       else {
         showDialog(
@@ -342,6 +344,34 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
     String downloadUrl = await taskSnapshot.ref.getDownloadURL();
 
     return downloadUrl;
+  }
+
+  // save the menu for the given seller in Firebase
+  saveInfo(String downloadUrl) {
+    final ref = FirebaseFirestore.instance
+        .collection("sellers")
+        .doc(sharedPreferences!.getString("uid"))
+        .collection("menus");
+
+    ref.doc(uniqueIdName).set({
+      "menuID": uniqueIdName,
+      "sellerUID": sharedPreferences!.getString("uid"),
+      "menuInfo": shortInfoController.text.toString(),
+      "menuTitle": titleController.text.toString(),
+      "publishedDate": DateTime.now(),
+      "status": "available",
+      "thumbnailUrl": downloadUrl,
+    });
+
+    clearMenusUploadForm();
+
+
+    setState(() {
+      // reset the uniqueIdName and uploading bool
+      // TODO: probably change to GUID in future
+      uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
+      uploading = false;
+    });
   }
 
 
