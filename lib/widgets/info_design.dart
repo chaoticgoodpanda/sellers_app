@@ -23,42 +23,47 @@ class _InfoDesignWidgetState extends State<InfoDesignWidget> {
         child: Container(
           height: 285,
           width: MediaQuery.of(context).size.width,
-          child: Column(
-            children: [
-              Divider(
-                height: 4,
-                thickness: 3,
-                // not too grey
-                color: Colors.grey[300],
-              ),
-              Image.network(
+          child:
+          // wrapped Column in SingleChildScrollView to deal with menu descriptions that are longer than container
+          SingleChildScrollView(
+            child:           Column(
+              children: [
+                Divider(
+                  height: 4,
+                  thickness: 3,
+                  // not too grey
+                  color: Colors.grey[300],
+                ),
+                Image.network(
                   widget.model!.thumbnailUrl!,
-                height: 220.0,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 1.0,),
-              Text(
-                widget.model!.menuTitle!,
-                style: TextStyle(
-                  color: Colors.cyan,
-                  fontSize: 20,
-                  fontFamily: "Train",
+                  height: 220.0,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              Text(
-                widget.model!.menuInfo!,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 10,
+                const SizedBox(height: 1.0,),
+                Text(
+                  widget.model!.menuTitle!,
+                  style: const TextStyle(
+                    color: Colors.cyan,
+                    fontSize: 20,
+                    fontFamily: "Train",
+                  ),
                 ),
-              ),
-              Divider(
-                height: 4,
-                thickness: 3,
-                color: Colors.grey[300],
-              )
-            ],
-          ),
+                Text(
+                  widget.model!.menuInfo!,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10,
+                  ),
+                ),
+                Divider(
+                  height: 4,
+                  thickness: 3,
+                  color: Colors.grey[300],
+                )
+              ],
+            ),
+          )
+
         ),
       ),
     );

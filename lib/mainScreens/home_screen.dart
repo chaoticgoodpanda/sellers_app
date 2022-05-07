@@ -1,7 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:sellers_app/authentication/auth_screen.dart';
 import 'package:sellers_app/global/global.dart';
+import 'package:sellers_app/model/menus.dart';
 import 'package:sellers_app/uploadScreens/menus_upload_screen.dart';
+import 'package:sellers_app/widgets/info_design.dart';
+import 'package:sellers_app/widgets/progress_bar.dart';
+import 'package:sellers_app/widgets/text_widget_header.dart';
 import 'package:sellers_app/widgets/user_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,8 +54,53 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Center(
-      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPersistentHeader(pinned: true, delegate: TextWidgetHeader(title: "My Menus"),),
+          const SliverToBoxAdapter(
+            child: ListTile(
+              title: Text("My Menus",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: "Signatra",
+                fontSize: 30,
+                letterSpacing: 2,
+                color: Colors.white,
+              ),),
+            ),
+          ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+            .collection("sellers")
+                .doc(sharedPreferences!.getString("uid"))
+            .collection("menus")
+            .snapshots(),
+            builder: (context, snapshot)
+            {
+              return !snapshot.hasData ?
+              SliverToBoxAdapter(
+                child: Center(child: circularProgress(),),
+              )
+              :
+              SliverStaggeredGrid.countBuilder(
+                  crossAxisCount: 1,
+                  staggeredTileBuilder: (c) => StaggeredTile.fit(1),
+                  itemBuilder: (context, index)
+                  {
+                    Menus model = Menus.fromJson(
+                      snapshot.data!.docs[index].data()! as Map<String, dynamic>
+                    );
+                    return InfoDesignWidget(
+                      model: model,
+                      context: context,
+                    );
+                  },
+                  itemCount: snapshot.data!.docs.length
+              );
+            },
+          )
+        ],
+      )
     );
   }
 }
