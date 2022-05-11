@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../authentication/auth_screen.dart';
 import '../global/global.dart';
+import '../mainScreens/home_screen.dart';
 
 class UserDrawer extends StatelessWidget {
 
@@ -60,7 +61,7 @@ class UserDrawer extends StatelessWidget {
                     ),
                     onTap: ()
                     {
-
+                      Navigator.push(context, MaterialPageRoute(builder: (c) => const HomeScreen()));
                     },
                   ),
                   const Divider(

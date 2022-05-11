@@ -74,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
             .collection("sellers")
                 .doc(sharedPreferences!.getString("uid"))
             .collection("menus")
+            // how the menus are sorted, by time created, newest first
+            .orderBy("publishedDate", descending: true)
             .snapshots(),
             builder: (context, snapshot)
             {
